@@ -1,5 +1,7 @@
 package com.invenco.is360.service;
 
+import com.invenco.is360.dto.ProductRequest;
+import com.invenco.is360.dto.ProductResponse;
 import com.invenco.is360.entity.Product;
 import com.invenco.is360.exception.ResourceNotFoundException;
 import com.invenco.is360.repository.ProductRepository;
@@ -22,8 +24,10 @@ public class ProductService {
      * Creates a new product and invalidates the product list cache.
      */
     @CacheEvict(value = "products", allEntries = true)
-    public Product createProduct(Product product) {
-        return productRepository.save(product);
+    public ProductResponse createProduct(ProductRequest request) {
+        Product entity = new Product(request.getName(), request.getPrice(), request.getStockQuantity());
+        Product saved = productRepository.save(entity);
+        return new ProductResponse(saved);
     }
 
     /**
@@ -31,10 +35,15 @@ public class ProductService {
      * (configured via Caffeine spec in application.properties).
      */
     @Cacheable(value = "products")
-    public List<Product> getAllProducts() {
-        return productRepository.findAll();
+    public List<ProductResponse> getAllProducts() {
+        return productRepository.findAll().stream()
+                .map(ProductResponse::new)
+                .toList();
     }
 
+    /**
+     * Internal lookup — returns entity for use by other services (e.g. OrderService).
+     */
     public Product findById(Long id) {
         return productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + id));
@@ -44,11 +53,12 @@ public class ProductService {
      * Updates a product and invalidates cache.
      */
     @CacheEvict(value = "products", allEntries = true)
-    public Product updateProduct(Long id, Product updated) {
+    public ProductResponse updateProduct(Long id, ProductRequest request) {
         Product product = findById(id);
-        product.setName(updated.getName());
-        product.setPrice(updated.getPrice());
-        product.setStockQuantity(updated.getStockQuantity());
-        return productRepository.save(product);
+        product.setName(request.getName());
+        product.setPrice(request.getPrice());
+        product.setStockQuantity(request.getStockQuantity());
+        Product saved = productRepository.save(product);
+        return new ProductResponse(saved);
     }
 }

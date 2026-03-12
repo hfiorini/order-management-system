@@ -1,0 +1,30 @@
+package com.invenco.is360.dto;
+
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+
+import java.math.BigDecimal;
+
+public class ProductRequest {
+
+    @NotBlank(message = "Product name must not be blank")
+    private String name;
+
+    @NotNull(message = "Price is required")
+    @Min(value = 0, message = "Price must be non-negative")
+    private BigDecimal price;
+
+    @NotNull(message = "Stock quantity is required")
+    @Min(value = 0, message = "Stock must be non-negative")
+    private Integer stockQuantity;
+
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
+
+    public BigDecimal getPrice() { return price; }
+    public void setPrice(BigDecimal price) { this.price = price; }
+
+    public Integer getStockQuantity() { return stockQuantity; }
+    public void setStockQuantity(Integer stockQuantity) { this.stockQuantity = stockQuantity; }
+}

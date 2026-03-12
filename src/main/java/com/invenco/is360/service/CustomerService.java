@@ -1,5 +1,7 @@
 package com.invenco.is360.service;
 
+import com.invenco.is360.dto.CustomerRequest;
+import com.invenco.is360.dto.CustomerResponse;
 import com.invenco.is360.entity.Customer;
 import com.invenco.is360.exception.DuplicateEmailException;
 import com.invenco.is360.repository.CustomerRepository;
@@ -14,13 +16,15 @@ public class CustomerService {
         this.customerRepository = customerRepository;
     }
 
-    public Customer createCustomer(Customer customer) {
-        if (customerRepository.existsByEmail(customer.getEmail())) {
+    public CustomerResponse createCustomer(CustomerRequest request) {
+        if (customerRepository.existsByEmail(request.getEmail())) {
             throw new DuplicateEmailException(
-                    "A customer with email '" + customer.getEmail() + "' already exists"
+                    "A customer with email '" + request.getEmail() + "' already exists"
             );
         }
-        return customerRepository.save(customer);
+        Customer entity = new Customer(request.getName(), request.getEmail());
+        Customer saved = customerRepository.save(entity);
+        return new CustomerResponse(saved);
     }
 
     public Customer findById(Long id) {

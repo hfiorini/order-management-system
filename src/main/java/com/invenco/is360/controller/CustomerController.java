@@ -1,6 +1,7 @@
 package com.invenco.is360.controller;
 
-import com.invenco.is360.entity.Customer;
+import com.invenco.is360.dto.CustomerRequest;
+import com.invenco.is360.dto.CustomerResponse;
 import com.invenco.is360.service.CustomerService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -18,8 +19,8 @@ public class CustomerController {
     }
 
     @PostMapping
-    public ResponseEntity<Customer> createCustomer(@Valid @RequestBody Customer customer) {
-        Customer created = customerService.createCustomer(customer);
-        return ResponseEntity.status(HttpStatus.CREATED).body(created);
+    public ResponseEntity<CustomerResponse> createCustomer(@Valid @RequestBody CustomerRequest request) {
+        CustomerResponse response = customerService.createCustomer(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 }

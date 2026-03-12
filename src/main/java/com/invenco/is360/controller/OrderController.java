@@ -1,7 +1,7 @@
 package com.invenco.is360.controller;
 
 import com.invenco.is360.dto.OrderRequest;
-import com.invenco.is360.entity.Order;
+import com.invenco.is360.dto.OrderResponse;
 import com.invenco.is360.service.OrderService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -21,14 +21,13 @@ public class OrderController {
     }
 
     @PostMapping
-    public ResponseEntity<Order> createOrder(@Valid @RequestBody OrderRequest orderRequest) {
-        Order created = orderService.createOrder(orderRequest);
-        return ResponseEntity.status(HttpStatus.CREATED).body(created);
+    public ResponseEntity<OrderResponse> createOrder(@Valid @RequestBody OrderRequest orderRequest) {
+        OrderResponse response = orderService.createOrder(orderRequest);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @GetMapping("/{customerId}")
-    public ResponseEntity<List<Order>> getOrdersByCustomer(@PathVariable Long customerId) {
-        List<Order> orders = orderService.getOrdersByCustomerId(customerId);
-        return ResponseEntity.ok(orders);
+    public ResponseEntity<List<OrderResponse>> getOrdersByCustomer(@PathVariable Long customerId) {
+        return ResponseEntity.ok(orderService.getOrdersByCustomerId(customerId));
     }
 }

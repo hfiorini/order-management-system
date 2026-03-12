@@ -1,6 +1,7 @@
 package com.invenco.is360.controller;
 
-import com.invenco.is360.entity.Product;
+import com.invenco.is360.dto.ProductRequest;
+import com.invenco.is360.dto.ProductResponse;
 import com.invenco.is360.service.ProductService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -20,20 +21,19 @@ public class ProductController {
     }
 
     @PostMapping
-    public ResponseEntity<Product> createProduct(@Valid @RequestBody Product product) {
-        Product created = productService.createProduct(product);
-        return ResponseEntity.status(HttpStatus.CREATED).body(created);
+    public ResponseEntity<ProductResponse> createProduct(@Valid @RequestBody ProductRequest request) {
+        ProductResponse response = productService.createProduct(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @GetMapping
-    public ResponseEntity<List<Product>> getAllProducts() {
+    public ResponseEntity<List<ProductResponse>> getAllProducts() {
         return ResponseEntity.ok(productService.getAllProducts());
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Product> updateProduct(@PathVariable Long id,
-                                                  @Valid @RequestBody Product product) {
-        Product updated = productService.updateProduct(id, product);
-        return ResponseEntity.ok(updated);
+    public ResponseEntity<ProductResponse> updateProduct(@PathVariable Long id,
+                                                          @Valid @RequestBody ProductRequest request) {
+        return ResponseEntity.ok(productService.updateProduct(id, request));
     }
 }

@@ -8,6 +8,7 @@ A Spring Boot REST API for managing customers, products, and orders with stock m
 - **Spring Data JPA** (Hibernate) with **H2** in-memory database
 - **Caffeine Cache** for product caching (10-minute TTL)
 - **Bean Validation** (Jakarta Validation)
+- **springdoc-openapi** (Swagger UI)
 - **Maven** build
 
 ## How to Run
@@ -38,6 +39,13 @@ Browse the in-memory database at **http://localhost:8080/h2-console**
 - JDBC URL: `jdbc:h2:mem:orderdb`
 - Username: `sa`
 - Password: *(leave blank)*
+
+### Swagger
+
+Interactive API documentation available at:
+```
+http://localhost:8080/swagger-ui/index.html
+```
 
 ## API Endpoints
 
@@ -81,12 +89,6 @@ Browse the in-memory database at **http://localhost:8080/h2-console**
 
 **GET /orders/{customerId}** — Get all orders for a customer
 
-
-## Swagger
-```
-http://localhost:8080/swagger-ui/index.html
-```
-
 ## Business Rules
 
 | Rule | Behavior |
@@ -124,8 +126,13 @@ src/main/java/com/invenco/is360/
 │   ├── ProductController.java        # POST/GET/PUT /products
 │   └── OrderController.java          # POST /orders, GET /orders/{id}
 ├── dto/
+│   ├── CustomerRequest.java          # Customer creation request body
+│   ├── CustomerResponse.java         # Customer API response
+│   ├── ProductRequest.java           # Product creation/update request body
+│   ├── ProductResponse.java          # Product API response
 │   ├── OrderRequest.java             # Order creation request body
 │   ├── OrderItemRequest.java         # Individual line item in order
+│   ├── OrderResponse.java            # Order API response (with nested OrderItemResponse)
 │   └── ErrorResponse.java            # Standardised error envelope
 ├── entity/
 │   ├── Customer.java                 # @OneToMany → Order
@@ -149,17 +156,19 @@ src/main/java/com/invenco/is360/
 
 ## Assumptions & Design Decisions
 
-1. **OrderItem join entity**: An `OrderItem` entity was introduced to properly model the many-to-many relationship between Orders and Products while storing per-line quantity and price. This is a more realistic model than a simple `@ManyToMany`.
+1. **DTO layer separation**: Controllers only work with request/response DTOs — no JPA entity classes are exposed to the API layer. All DTO ↔ entity mapping happens inside the service layer, keeping the API contract independent of the database model.
 
-2. **Price snapshot**: `OrderItem` captures the `unitPrice` at the time of ordering, so future product price changes don't retroactively alter historical orders.
+2. **OrderItem join entity**: An `OrderItem` entity was introduced to properly model the many-to-many relationship between Orders and Products while storing per-line quantity and price. This is a more realistic model than a simple `@ManyToMany`.
 
-3. **Pessimistic stock check**: Stock is checked and deducted within a single `@Transactional` method. In a production system with concurrent requests, you'd want pessimistic locking (`@Lock(PESSIMISTIC_WRITE)`) or optimistic locking (`@Version`) on the Product entity.
+3. **Price snapshot**: `OrderItem` captures the `unitPrice` at the time of ordering, so future product price changes don't retroactively alter historical orders.
 
-4. **Premium threshold**: The $500 premium threshold uses strict greater-than (`> 500`), meaning exactly $500.00 is *not* premium.
+4. **Pessimistic stock check**: Stock is checked and deducted within a single `@Transactional` method. In a production system with concurrent requests, you'd want pessimistic locking (`@Lock(PESSIMISTIC_WRITE)`) or optimistic locking (`@Version`) on the Product entity.
 
-5. **Cache scope**: Only the "list all products" query is cached. Individual product lookups (used during order placement) hit the database directly to ensure stock accuracy.
+5. **Premium threshold**: The $500 premium threshold uses strict greater-than (`> 500`), meaning exactly $500.00 is *not* premium.
 
-6. **H2 in-memory**: Data is lost on restart. For persistence, swap the datasource to PostgreSQL/MySQL with minimal config changes.
+6. **Cache scope**: Only the "list all products" query is cached. Individual product lookups (used during order placement) hit the database directly to ensure stock accuracy.
+
+7. **H2 in-memory**: Data is lost on restart. For persistence, swap the datasource to PostgreSQL/MySQL with minimal config changes.
 
 ## Potential Improvements
 

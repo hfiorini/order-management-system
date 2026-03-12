@@ -2,6 +2,7 @@ package com.invenco.is360.service;
 
 import com.invenco.is360.dto.OrderItemRequest;
 import com.invenco.is360.dto.OrderRequest;
+import com.invenco.is360.dto.OrderResponse;
 import com.invenco.is360.entity.Customer;
 import com.invenco.is360.entity.Order;
 import com.invenco.is360.entity.OrderItem;
@@ -38,7 +39,7 @@ public class OrderService {
      * has insufficient stock, all stock deductions are rolled back.
      */
     @Transactional
-    public Order createOrder(OrderRequest request) {
+    public OrderResponse createOrder(OrderRequest request) {
         // 1. Validate customer exists
         Customer customer = customerService.findById(request.getCustomerId());
         if (customer == null) {
@@ -86,13 +87,14 @@ public class OrderService {
             order.setPremium(true);
         }
 
-        return orderRepository.save(order);
+        Order saved = orderRepository.save(order);
+        return new OrderResponse(saved);
     }
 
     /**
      * Fetches all orders for a given customer.
      */
-    public List<Order> getOrdersByCustomerId(Long customerId) {
+    public List<OrderResponse> getOrdersByCustomerId(Long customerId) {
         // Verify customer exists first
         Customer customer = customerService.findById(customerId);
         if (customer == null) {
@@ -100,6 +102,8 @@ public class OrderService {
                     "Customer not found with id: " + customerId
             );
         }
-        return orderRepository.findByCustomer_Id(customerId);
+        return orderRepository.findByCustomer_Id(customerId).stream()
+                .map(OrderResponse::new)
+                .toList();
     }
 }
