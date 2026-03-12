@@ -81,6 +81,12 @@ Browse the in-memory database at **http://localhost:8080/h2-console**
 
 **GET /orders/{customerId}** — Get all orders for a customer
 
+
+## Swagger
+```
+http://localhost:8080/swagger-ui/index.html
+```
+
 ## Business Rules
 
 | Rule | Behavior |
